@@ -1,14 +1,18 @@
 #include <raylib.h>
+#include <raymath.h> 
 #include <cstdlib>  // For rand()
 #include <ctime>    // For seeding rand()
 #include <string>
 #include <iostream>
 #include <functional>
 #include <chrono>
+using namespace std;
+
+
 
 // Settings
-const int WINDOW_WIDTH = 1920;
-const int WINDOW_HEIGHT = 1080;
+const int WINDOW_WIDTH = 800; //1920
+const int WINDOW_HEIGHT = 600; //1080
 const Color BG_COLOR = { 15, 10, 25, 255 };
 const float PLAYER_SPEED = 500.0f;
 const float LASER_SPEED = 600.0f;
@@ -82,23 +86,92 @@ void onTimerExpire() {
     std::cout << "Timer expired!" << std::endl;
 }
 
-int main() {
-    InitWindow(800, 600, "Timer Seconds Test");
-    SetTargetFPS(60);
+class Sprite{
+    public:
+    Texture2D texture;
+    Vector2 pos;
+    float speed;
+    Vector2 direction;
+    Vector2 size; //= { (float)texture.width, (float)texture.height };
 
-    srand(static_cast<unsigned int>(time(nullptr))); // seed random
+    Sprite(){
 
-    Timer myTimer(1.0f, true, true, onTimerExpire);  // 1-second timer, repeats, autostart
+    }
+    Sprite(Texture2D t, Vector2 p, float s, Vector2 d){
+        texture = t;
+        pos = p;
+        speed = s;
+        direction = d;
+    }
+    Sprite(Texture2D t, Vector2 p, float s){
+        texture = t;
+        pos = p;
+        speed = s;
+    }
+    void move(float dt){
+        pos.x += direction.x * speed * dt;
+        pos.y += direction.y * speed * dt;
+    }
+    void update(float dt){
 
-    while (!WindowShouldClose()) {
-        myTimer.update();
+    }
+    void draw(void){
+        DrawTextureV(texture,pos,WHITE);
+    }
+};
 
-        BeginDrawing();
-        ClearBackground(BG_COLOR);
-        DrawText("Watch the console: Timer fires every 1 second!", 20, 20, 20, RAYWHITE);
-        EndDrawing();
+class Player: public Sprite{
+    public:
+    Player(){
+        speed = PLAYER_SPEED;
+    }
+    Player(Texture2D t, Vector2 p): Sprite(t,p, PLAYER_SPEED){
+
+    }
+    void input(void){
+        direction.x = (int)(IsKeyDown(KEY_RIGHT)) - (int)(IsKeyDown(KEY_LEFT));
+        direction.y = (int)(IsKeyDown(KEY_DOWN)) - (int)(IsKeyDown(KEY_UP));
+        if (direction.x != 0 || direction.y != 0) {
+            direction = Vector2Normalize(direction);
+        }
+    }
+    void constraint(void){
+        pos.x = Clamp(pos.x, 0, (WINDOW_WIDTH - size.x));
+        pos.y = Clamp(pos.y, 0, (WINDOW_HEIGHT - size.y));
+    }
+    void update(float dt){
+        input();
+        move(dt);
+        constraint();
+    }
+};
+
+class Game{
+    public:
+    Player player;
+    Game(){
+        InitWindow(WINDOW_WIDTH,WINDOW_HEIGHT,"Asteroids");
+        player.texture = LoadTexture("images/spaceship.png");
+        player.pos = {WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2};
+        player.size = { (float)player.texture.width, (float)player.texture.height };
     }
 
-    CloseWindow();
+    void run(void){
+        while(!WindowShouldClose()){
+            float dt = GetFrameTime();
+            player.update(dt);
+            BeginDrawing();
+            ClearBackground(BG_COLOR);
+            player.draw();
+            EndDrawing();
+        }
+        CloseWindow();
+    }
+};
+
+int main() {
+    Game game;
+    game.run();
+
     return 0;
 }
