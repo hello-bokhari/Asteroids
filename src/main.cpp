@@ -11,8 +11,8 @@ using namespace std;
 
 
 // Settings
-const int WINDOW_WIDTH = 800; //1920
-const int WINDOW_HEIGHT = 600; //1080
+const int WINDOW_WIDTH = 1920; //1920
+const int WINDOW_HEIGHT = 1080; //1080
 const Color BG_COLOR = { 15, 10, 25, 255 };
 const float PLAYER_SPEED = 500.0f;
 const float LASER_SPEED = 600.0f;
@@ -22,8 +22,8 @@ const float METEOR_TIMER_DURATION = 0.4f;
 const float FONT_SIZE = 120.0f;
 
 // Random helper functions
-int randint(int min, int max) {
-    return min + (rand() % (max - min + 1));
+float randint(float min, float max) {
+    return min + (rand() % (int)(max - min + 1));
 }
 
 float uniform(float min, float max) {
@@ -146,24 +146,51 @@ class Player: public Sprite{
     }
 };
 
+class Star : public Sprite {
+    public:
+    float scale;
+    void draw(void){
+        DrawTextureEx(texture,pos,0,scale,WHITE);
+    }
+
+};
+
 class Game{
     public:
     Player player;
+    Star star[30];
     Game(){
         InitWindow(WINDOW_WIDTH,WINDOW_HEIGHT,"Asteroids");
         player.texture = LoadTexture("images/spaceship.png");
         player.pos = {WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2};
         player.size = { (float)player.texture.width, (float)player.texture.height };
+        Texture2D starTexture = LoadTexture("images/star.png");
+        for(int i =0; i<30; i++){
+            star[i].texture = starTexture;
+            star[i].pos = {randint(0,WINDOW_WIDTH),randint(0,WINDOW_HEIGHT)};
+            star[i].scale = uniform(0.5, 1.2); 
+        }
+
+    }
+    void update(void){
+        float dt = GetFrameTime();
+        player.update(dt);
+    }
+    void draw(void){
+        BeginDrawing();
+        ClearBackground(BG_COLOR);
+        for(int i =0; i<30; i++){
+            star[i].draw();
+        }
+        player.draw();
+        EndDrawing();
     }
 
     void run(void){
         while(!WindowShouldClose()){
-            float dt = GetFrameTime();
-            player.update(dt);
-            BeginDrawing();
-            ClearBackground(BG_COLOR);
-            player.draw();
-            EndDrawing();
+            update();
+            draw();
+            
         }
         CloseWindow();
     }
