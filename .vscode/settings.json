@@ -23,6 +23,7 @@
 		"string_view": "cpp",
 		"initializer_list": "cpp",
 		"span": "cpp",
-		"*.m": "cpp"
+		"*.m": "cpp",
+		"iostream": "cpp"
 	}
 }

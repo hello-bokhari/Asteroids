@@ -11,8 +11,8 @@ using namespace std;
 
 
 // Settings
-const int WINDOW_WIDTH = 800; //1920
-const int WINDOW_HEIGHT = 600; //1080
+const int WINDOW_WIDTH = 1920; //1920
+const int WINDOW_HEIGHT = 1080; //1080
 const Color BG_COLOR = { 15, 10, 25, 255 };
 const float PLAYER_SPEED = 500.0f;
 const float LASER_SPEED = 600.0f;
@@ -113,20 +113,31 @@ class Sprite{
         pos.y += direction.y * speed * dt;
     }
     void update(float dt){
-
+        move(dt);
     }
     void draw(void){
         DrawTextureV(texture,pos,WHITE);
     }
 };
 
+class Laser : public Sprite {
+    public:
+    Laser(){
+
+    }
+    Laser(Texture2D tex, Vector2 p): Sprite(tex,p,LASER_SPEED,{0,-1}){}
+};
+
 class Player: public Sprite{
     public:
+    Laser *laser[100];
+    int laser_count;
     Player(){
         speed = PLAYER_SPEED;
+        laser_count =0;
     }
     Player(Texture2D t, Vector2 p): Sprite(t,p, PLAYER_SPEED){
-
+        laser_count = 0;
     }
     void input(void){
         direction.x = (int)(IsKeyDown(KEY_RIGHT)) - (int)(IsKeyDown(KEY_LEFT));
@@ -135,7 +146,7 @@ class Player: public Sprite{
             direction = Vector2Normalize(direction);
         }
         if((int)(IsKeyPressed(KEY_SPACE))){
-            cout<<"Laser"<<endl;
+            Shoot_laser({pos.x + (size.x/2),pos.y-60});
         }
     }
     void constraint(void){
@@ -146,8 +157,30 @@ class Player: public Sprite{
         input();
         move(dt);
         constraint();
+        for(int i =0; i< laser_count; i++){
+            laser[i]->update(dt);
+        }
     }
+    void draw_lasers() {
+        for (int i = 0; i < laser_count; i++) {
+            laser[i]->draw();
+        }
+    }
+    void Shoot_laser(Vector2 p){
+        if (laser_count < 100) {
+            laser[laser_count++] = new Laser(LoadTexture("images/laser.png"),p);
+        }
+        else{
+            laser_count = 0;
+        }
+    } 
+    ~Player() {
+        for (int i = 0; i < laser_count; i++) {
+            delete laser[i];
+        }
+    }  
 };
+
 
 class Star : public Sprite {
     public:
@@ -175,6 +208,7 @@ class Game{
         }
 
     }
+    
     void update(void){
         float dt = GetFrameTime();
         player.update(dt);
@@ -186,6 +220,7 @@ class Game{
             star[i].draw();
         }
         player.draw();
+        player.draw_lasers();
         EndDrawing();
     }
 
