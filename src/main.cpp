@@ -11,8 +11,8 @@ using namespace std;
 
 
 // Settings
-const int WINDOW_WIDTH = 1920; //1920
-const int WINDOW_HEIGHT = 1080; //1080
+const int WINDOW_WIDTH = 800; //1920
+const int WINDOW_HEIGHT = 600; //1080
 const Color BG_COLOR = { 15, 10, 25, 255 };
 const float PLAYER_SPEED = 500.0f;
 const float LASER_SPEED = 600.0f;
@@ -134,6 +134,9 @@ class Player: public Sprite{
         if (direction.x != 0 || direction.y != 0) {
             direction = Vector2Normalize(direction);
         }
+        if((int)(IsKeyPressed(KEY_SPACE))){
+            cout<<"Laser"<<endl;
+        }
     }
     void constraint(void){
         pos.x = Clamp(pos.x, 0, (WINDOW_WIDTH - size.x));
@@ -198,7 +201,7 @@ class Game{
 
 int main() {
     Game game;
-    game.run();
+    game.run(); 
 
     return 0;
 }
